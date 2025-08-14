@@ -15,7 +15,7 @@ class UserProvider with ChangeNotifier {
   int _xp = 0;
   int get level => _level;
   int get xp => _xp;
-  
+
   late ThemeData _themeData;
   late String _themeName;
   late Brightness _brightness;
@@ -36,7 +36,8 @@ class UserProvider with ChangeNotifier {
     });
 
     final fallbackPreset = getThemePreset('Purple');
-    _themeData = buildCustomTheme(preset: fallbackPreset, brightness: Brightness.light);
+    _themeData =
+        buildCustomTheme(preset: fallbackPreset, brightness: Brightness.light);
     _themeName = 'Purple';
     _brightness = Brightness.light;
   }
@@ -51,10 +52,7 @@ class UserProvider with ChangeNotifier {
     final uid = user?.uid;
     if (uid == null) return;
 
-    final doc = await _firestore
-      .collection('users')
-      .doc(uid)
-      .get();
+    final doc = await _firestore.collection('users').doc(uid).get();
     final data = doc.data();
 
     final fallbackName = user?.displayName ?? 'User';
@@ -68,7 +66,8 @@ class UserProvider with ChangeNotifier {
 
       _themeName = data['themeName'] ?? 'Purple';
       final brightnessString = data['brightness'] ?? 'light';
-      _brightness = brightnessString == 'dark' ? Brightness.dark : Brightness.light;
+      _brightness =
+          brightnessString == 'dark' ? Brightness.dark : Brightness.light;
 
       final preset = getThemePreset(_themeName);
       _themeData = buildCustomTheme(preset: preset, brightness: _brightness);
@@ -76,7 +75,8 @@ class UserProvider with ChangeNotifier {
       _cachedDisplayName = fallbackName;
       _themeName = 'Purple';
       _brightness = Brightness.light;
-      _themeData = buildCustomTheme(preset: getThemePreset('Purple'), brightness: Brightness.light);
+      _themeData = buildCustomTheme(
+          preset: getThemePreset('Purple'), brightness: Brightness.light);
     }
 
     _hasLoadedData = true;
@@ -98,18 +98,51 @@ class UserProvider with ChangeNotifier {
       _imageUrl = imageUrl;
     }
 
-    await _firestore
-      .collection('users')
-      .doc(uid)
-      .set({
-        if (displayName != null) 
-          'displayName': displayName,
-        if (imageUrl != null)
-          'profileImageUrl': imageUrl,
-      }, SetOptions(merge: true));
-    
+    await _firestore.collection('users').doc(uid).set({
+      if (displayName != null) 'displayName': displayName,
+      if (imageUrl != null) 'profileImageUrl': imageUrl,
+    }, SetOptions(merge: true));
+
     notifyListeners();
     debugLog('[UserProvider] Profile updated');
+  }
+
+  int levelUpXP(int level) {
+    return 100 + (level * 50);
+  }
+
+  int get neededXP => levelUpXP(level);
+  bool get hasLeveledUp => xp >= neededXP;
+  double get xpProgress {
+    if (_xp >= neededXP) return 0.0;
+    return (_xp / neededXP).clamp(0.0, 1.0);
+  }
+
+  Future<void> addXP(int amount) async {
+    final user = _auth.currentUser;
+    final uid = user?.uid;
+    if (uid == null) return;
+
+    _xp += amount;
+
+    bool leveledUp = false;
+
+    while (_xp >= levelUpXP(_level)) {
+      _xp -= levelUpXP(_level);
+      _level += 1;
+      leveledUp = true;
+    }
+
+    await _firestore.collection('users').doc(uid).set({
+      'xp': _xp,
+      'level': _level,
+    }, SetOptions(merge: true));
+
+    notifyListeners();
+    debugLog('[UserProvider] Added $amount XP, now $_xp');
+    if (leveledUp) {
+      debugLog('[UserProvider] User leveled up! Now level $_level');
+    }
   }
 
   Future<void> updateLevel(int newLevel) async {
@@ -118,28 +151,22 @@ class UserProvider with ChangeNotifier {
     if (uid == null) return;
 
     _level = newLevel;
-    await _firestore
-      .collection('users')
-      .doc(uid)
-      .set({
-        'level': newLevel,
-      }, SetOptions(merge: true));
-      notifyListeners();
+    await _firestore.collection('users').doc(uid).set({
+      'level': newLevel,
+    }, SetOptions(merge: true));
+    notifyListeners();
   }
-  
+
   Future<void> updateXP(int newXP) async {
     final user = _auth.currentUser;
     final uid = user?.uid;
     if (uid == null) return;
 
     _xp = newXP;
-    await _firestore
-      .collection('users')
-      .doc(uid)
-      .set({
-        'xp': newXP,
-      }, SetOptions(merge: true));
-      notifyListeners();
+    await _firestore.collection('users').doc(uid).set({
+      'xp': newXP,
+    }, SetOptions(merge: true));
+    notifyListeners();
   }
 
   Future<void> updateTheme(String themeName, {Brightness? brightness}) async {
@@ -153,13 +180,10 @@ class UserProvider with ChangeNotifier {
     final preset = getThemePreset(_themeName);
     _themeData = buildCustomTheme(preset: preset, brightness: _brightness);
 
-    await _firestore
-      .collection('users')
-      .doc(uid)
-      .set({
-        'themeName': _themeName,
-        'brightness': _brightness.name,
-      }, SetOptions(merge: true));
+    await _firestore.collection('users').doc(uid).set({
+      'themeName': _themeName,
+      'brightness': _brightness.name,
+    }, SetOptions(merge: true));
 
     notifyListeners();
     debugLog('[UserProvider] Theme updated');
@@ -175,7 +199,8 @@ class UserProvider with ChangeNotifier {
 
   Future<void> applyFallbackTheme() async {
     final fallbackPreset = getThemePreset('Purple');
-    _themeData = buildCustomTheme(preset: fallbackPreset, brightness: Brightness.light);
+    _themeData =
+        buildCustomTheme(preset: fallbackPreset, brightness: Brightness.light);
     _themeName = 'Purple';
     _brightness = Brightness.light;
     notifyListeners();

@@ -33,7 +33,7 @@ class _DebugPageState extends State<DebugPage> {
           _buildColorPreview(context, "Tertiary", themeColor(context).tertiary),
           const Divider(height: 32),
           Text("Manual XP / Level Input", style: textTheme.titleMedium),
-          const SizedBox (height: 8),
+          const SizedBox(height: 8),
           TextField(
             controller: _xpController,
             keyboardType: TextInputType.number,
@@ -45,15 +45,28 @@ class _DebugPageState extends State<DebugPage> {
           const SizedBox(height: 8),
           ElevatedButton(
             onPressed: () {
+              final int? xpToAdd = int.tryParse(_xpController.text);
+              if (xpToAdd != null) {
+                userProvider.addXP(xpToAdd);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Added $xpToAdd XP")),
+                );
+              }
+            },
+            child: const Text("Add XP"),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () {
               final int? newXP = int.tryParse(_xpController.text);
               if (newXP != null) {
                 userProvider.updateXP(newXP);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("XP updated to $newXP")),
+                  SnackBar(content: Text("XP set to $newXP")),
                 );
               }
             },
-            child: const Text("Update XP"),
+            child: const Text("Set Exact XP"),
           ),
           const SizedBox(height: 16),
           TextField(

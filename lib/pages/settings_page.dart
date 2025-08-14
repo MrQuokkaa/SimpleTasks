@@ -11,28 +11,12 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final List<String> weekdays = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-
   String selectedTheme = 'Blue';
-  String? selectedDay = 'Select day';
-
-  List<String> hours =
-      List.generate(24, (i) => i.toString().padLeft(2, '0') + ":00");
-  String selectedHour = '00:00';
 
   @override
   void initState() {
     super.initState();
-    selectedTheme =
-        Provider.of<UserProvider>(context, listen: false).themeName;
+    selectedTheme = Provider.of<UserProvider>(context, listen: false).themeName;
   }
 
   @override
@@ -50,13 +34,18 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(
-          "Settings",
-          style: textTheme.headlineLarge,
+        title: Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: Text(
+            "Settings",
+            style: textTheme.headlineLarge,
+          ),
         ),
         actions: [
           if (debugMode)
-            IconButton(
+          Padding(
+            padding: EdgeInsets.only(top:20, right: 10),
+            child: IconButton(
               icon: const Icon(Icons.bug_report),
               onPressed: () {
                 Navigator.push(
@@ -65,70 +54,53 @@ class _SettingsPageState extends State<SettingsPage> {
                 );
               },
             ),
+          ),
         ],
       ),
       body: ListView(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Change default tasks",
-                        style: TextStyle(fontSize: 16)),
-                    DropdownButton<String>(
-                      value: selectedDay,
-                      items: ['Select day', ...weekdays].map((day) {
-                        return DropdownMenuItem<String>(
-                          value: day,
-                          child: Text(day),
-                        );
-                      }).toList(),
-                      onChanged: (value) async {
-                        if (value == null || value == 'Select day') return;
-                        setState(() => selectedDay = value);
+            child: InkWell(
+              onTap: () async {
+                final uid = FirebaseAuth.instance.currentUser?.uid;
+                if (uid == null) return;
 
-                        final uid = FirebaseAuth.instance.currentUser?.uid;
-                        if (uid == null) return;
+                final doc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .collection('defaultTodos')
+                    .doc('Monday')
+                    .get();
 
-                        final doc = await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(uid)
-                            .collection('defaultTodos')
-                            .doc(value)
-                            .get();
+                List<List<dynamic>> tasks = [];
+                if (doc.exists) {
+                  final data = doc.data();
+                  if (data != null && data['tasks'] is List) {
+                    tasks = List<List<dynamic>>.from(
+                      data['tasks']
+                          .map((task) => [task['name'], task['completed']]),
+                    );
+                  }
+                }
 
-                        List<List<dynamic>> tasks = [];
-                        if (doc.exists) {
-                          final data = doc.data();
-                          if (data != null && data['tasks'] is List) {
-                            tasks = List<List<dynamic>>.from(
-                              data['tasks'].map(
-                                  (task) => [task['name'], task['completed']]),
-                            );
-                          }
-                        }
+                await Future.delayed(const Duration(milliseconds: 50));
 
-                        await Future.delayed(Duration(milliseconds: 50));
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => DefaultTodoPage(
-                                weekday: value, toDoList: tasks),
-                          ),
-                        ).then((_) {
-                          setState(() => selectedDay = 'Select day');
-                        });
-                      },
-                    ),
-                  ],
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        DefaultTodoPage(weekday: 'Monday', toDoList: tasks),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  "Edit Default Tasks",
+                  style: textTheme.bodyLarge,
                 ),
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
           ),
           const Divider(),
@@ -137,7 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("App Theme", style: TextStyle(fontSize: 16)),
+                Text("App Theme", style: textTheme.bodyLarge),
                 DropdownButton<String>(
                   value: sortedPresets.any((p) => p.name == selectedTheme)
                       ? selectedTheme
@@ -157,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               border: Border.all(color: Colors.black12),
                             ),
                           ),
-                          Text(preset.name),
+                          Text(preset.name, style: textTheme.bodyLarge),
                         ],
                       ),
                     );
@@ -168,7 +140,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     setState(() => selectedTheme = value);
 
                     final brightness = userProvider.brightness;
-                    await userProvider.updateTheme(value, brightness: brightness);
+                    await userProvider.updateTheme(value,
+                        brightness: brightness);
                     debugLog('[Settings] Theme updated and saved for user');
                   },
                 ),

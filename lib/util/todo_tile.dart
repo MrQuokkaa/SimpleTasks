@@ -19,6 +19,7 @@ class ToDoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
       padding: const EdgeInsets.only(left: 25, right: 25, top: 25),
       child: Slidable(
@@ -49,7 +50,7 @@ class ToDoTile extends StatelessWidget {
               ),
               Text(
                 taskName,
-                style: TextStyle(
+                style: textTheme.bodyLarge?.copyWith(
                     decoration: taskCompleted
                         ? TextDecoration.lineThrough
                         : TextDecoration.none),

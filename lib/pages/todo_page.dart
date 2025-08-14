@@ -74,11 +74,12 @@ class _ToDoState extends State<ToDoPage> {
 
     if (selected == today) return "Today";
     if (selected == tomorrow) return "Tomorrow";
-    return DateFormat('EEEE, d MMM').format(date);
+    return DateFormat('EEE, d MMM').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Consumer<FirestoreDataBase>(
       builder: (context, db, _) {
         final tasks = db.getTasksForDate(selectedDate);
@@ -91,13 +92,8 @@ class _ToDoState extends State<ToDoPage> {
             ),
             title: GestureDetector(
               onTap: _pickDate,
-              child: Text(
-                "~ Tasks for ${getFormattedDate(selectedDate)} ~",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Text("Tasks for ${getFormattedDate(selectedDate)}",
+                  style: textTheme.headlineMedium),
             ),
             centerTitle: true,
           ),

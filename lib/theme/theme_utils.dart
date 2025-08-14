@@ -26,14 +26,43 @@ ThemeData buildCustomTheme({
   final textTheme = TextTheme(
     headlineLarge: TextStyle(
       fontFamily: 'Roboto Slab',
+      fontSize: 26,
+      fontWeight: FontWeight.w300,
+      color: scheme.onSurface,
+    ),
+    headlineMedium: TextStyle(
+      fontFamily: 'Roboto Slab',
       fontSize: 24,
+      fontWeight: FontWeight.w300,
+      color: scheme.onSurface,
+    ),
+    headlineSmall: TextStyle(
+      fontFamily: 'Roboto Slab',
+      fontSize: 22,
+      fontWeight: FontWeight.w300,
+      color: scheme.onSurface,
+    ),
+    titleLarge: TextStyle(
+      fontFamily: 'Poppins',
+      fontSize: 22,
       fontWeight: FontWeight.w300,
       color: scheme.onSurface,
     ),
     titleMedium: TextStyle(
       fontFamily: 'Poppins',
+      fontSize: 20,
+      fontWeight: FontWeight.w300,
+      color: scheme.onSurface,
+    ),
+    titleSmall: TextStyle(
+      fontFamily: 'Poppins',
       fontSize: 18,
       fontWeight: FontWeight.w300,
+      color: scheme.onSurface,
+    ),
+    bodyLarge: TextStyle(
+      fontFamily: 'Poppins',
+      fontSize: 16,
       color: scheme.onSurface,
     ),
     bodyMedium: TextStyle(
@@ -41,10 +70,25 @@ ThemeData buildCustomTheme({
       fontSize: 14,
       color: scheme.onSurface,
     ),
-    labelSmall: TextStyle(
+    bodySmall: TextStyle(
       fontFamily: 'Poppins',
       fontSize: 12,
-      color: scheme.onSurface.withOpacity(0.6),
+      color: scheme.onSurface,
+    ),
+    labelLarge: TextStyle(
+      fontFamily: 'Poppins',
+      fontSize: 14,
+      color: scheme.onSurface.withValues(alpha: 0.6),
+    ),
+    labelMedium: TextStyle(
+      fontFamily: 'Poppins',
+      fontSize: 12,
+      color: scheme.onSurface.withValues(alpha: 0.6),
+    ),
+    labelSmall: TextStyle(
+      fontFamily: 'Poppins',
+      fontSize: 10,
+      color: scheme.onSurface.withValues(alpha: 0.6),
     ),
   );
 
@@ -58,7 +102,7 @@ ThemeData buildCustomTheme({
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: scheme.surface,
-      indicatorColor: preset.tertiary.withOpacity(0.2),
+      indicatorColor: preset.tertiary.withValues(alpha: 0.2),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return IconThemeData(color: preset.tertiary);
@@ -69,7 +113,7 @@ ThemeData buildCustomTheme({
         return TextStyle(
           color: states.contains(WidgetState.selected)
               ? preset.tertiary
-              : scheme.onSurface.withOpacity(0.6),
+              : scheme.onSurface.withValues(alpha: 0.6),
         );
       }),
     ),
@@ -93,4 +137,12 @@ ThemePreset themeColor(BuildContext context) {
 
 TextTheme themeText(BuildContext context) {
   return Theme.of(context).textTheme;
+}
+
+extension CustomTextTheme on TextTheme {
+  TextStyle get bodyExtraLarge => TextStyle(
+        fontFamily: 'Poppins',
+        fontSize: 18,
+        color: Colors.black,
+      );
 }

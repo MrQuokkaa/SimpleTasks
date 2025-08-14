@@ -22,9 +22,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: Text('Login', style: textTheme.headlineLarge),
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -36,18 +37,20 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 16),
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Email',
+                labelStyle: textTheme.labelLarge,
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Password',
+                labelStyle: textTheme.labelLarge,
               ),
             ),
             const SizedBox(height: 16),
@@ -61,19 +64,23 @@ class _LoginPageState extends State<LoginPage> {
                     _passwordController.text.trim(),
                   );
                   if (user != null && context.mounted) {
-                    final userProvider = Provider.of<UserProvider>(context, listen: false);
+                    final userProvider =
+                        Provider.of<UserProvider>(context, listen: false);
                     await userProvider.loadUserData();
                     debugLog('[Login] Theme loaded..');
-                    
+
                     final imageUrl = userProvider.imageUrl;
                     if (imageUrl.isNotEmpty) {
-                      await precacheImage(CachedNetworkImageProvider(imageUrl), context);
+                      await precacheImage(
+                          CachedNetworkImageProvider(imageUrl), context);
                       debugLog('[Login] Profile image cached..');
                     } else {
-                      await precacheImage(const AssetImage('assets/images/default_avatar.png'), context);
+                      await precacheImage(
+                          const AssetImage('assets/images/default_avatar.png'),
+                          context);
                       debugLog('[Login] Default avatar cached..');
                     }
-                    
+
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(

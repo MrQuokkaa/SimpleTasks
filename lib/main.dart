@@ -94,4 +94,3 @@ class _AutoLoginState extends State<AutoLogin> {
       : const Scaffold(body: SizedBox.shrink());
   }
 }
-  

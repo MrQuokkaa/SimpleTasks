@@ -48,12 +48,13 @@ class _DefaultTodoPageState extends State<DefaultTodoPage> {
         .doc(widget.weekday)
         .set({'tasks': tasks});
   }
+  
+  final days = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+  final weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.weekday}"),
         actions: [
           IconButton(
             icon: Icon(Icons.save),
@@ -66,6 +67,60 @@ class _DefaultTodoPageState extends State<DefaultTodoPage> {
       ),
       body: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(7, (index) {
+              final day = days[index];
+              final weekday = weekdays[index];
+              final isSelected = weekday == widget.weekday;
+
+              return GestureDetector(
+                onTap: () async {
+                  final uid = FirebaseAuth.instance.currentUser?.uid;
+                  if (uid == null) return;
+
+                  final doc = await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .collection('defaultTodos')
+                    .doc(weekday)
+                    .get();
+
+                  List<List<dynamic>> tasks = [];
+                  if (doc.exists) {
+                    final data = doc.data();
+                    if (data != null && data['tasks'] is List) {
+                      tasks = List<List<dynamic>>.from(
+                        data['tasks'].map((task) => [task['name'], task['completed']]),
+                      );
+                    }
+                  }
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DefaultTodoPage(weekday: weekday, toDoList: tasks),
+                    )
+                  );
+                  
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? themeColor(context).primary : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    day,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
           Expanded(
             child: ReorderableListView(
               buildDefaultDragHandles: false,
